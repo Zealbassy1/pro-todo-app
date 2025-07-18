@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-6">Welcome, {{ name }}!</h1>
+
+    <!-- Form to add new todo -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-4">Add a New To-Do</h2>
+        <form method="POST" action="/dashboard" class="flex gap-4">
+            {{ form.hidden_tag() }}
+            <div class="flex-grow">
+                {{ form.content(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700
+                leading-tight focus:outline-none focus:shadow-outline", placeholder="What do you need to do?") }}
+            </div>
+            <div>
+                {{ form.submit(class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded
+                focus:outline-none focus:shadow-outline cursor-pointer") }}
+            </div>
+        </form>
+    </div>
+
+    <!-- List of todos -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-4">Your To-Do List</h2>
+        <ul class="space-y-4">
+            {% for todo in todos %}
+            <li
+                class="flex items-center justify-between p-4 rounded-lg {% if todo.completed %}bg-green-50 border-l-4 border-green-500{% else %}bg-gray-50 border-l-4 border-gray-400{% endif %}">
+                <span class="{% if todo.completed %}line-through text-gray-500{% endif %}">{{ todo.content }}</span>
+                <div class="flex gap-2">
+                    <a href="{{ url_for('update_todo', todo_id=todo.id) }}"
+                        class="text-white font-bold py-1 px-3 rounded {% if todo.completed %}bg-yellow-500 hover:bg-yellow-600{% else %}bg-green-500 hover:bg-green-600{% endif %}">
+                        {% if todo.completed %}Undo{% else %}Done{% endif %}
+                    </a>
+                    <a href="{{ url_for('delete_todo', todo_id=todo.id) }}"
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded">Delete</a>
+                </div>
+            </li>
+            {% else %}
+            <li class="text-gray-500">You have no to-do items yet. Add one above!</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
