@@ -1,10 +1,12 @@
 name: Deploy To-Do App
 
+# This workflow runs on every push to the main branch
 on:
   push:
     branches: ["main"]
 
 jobs:
+  # This job builds the Docker image and pushes it to Docker Hub
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
@@ -25,9 +27,10 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/pro-todo-app:latest
 
+  # This job deploys the new image to the EC2 server
   deploy:
     name: Deploy to EC2
-    needs: build-and-push
+    needs: build-and-push # This job won't start until the build job is finished
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to EC2 instance
@@ -37,11 +40,15 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
+            # Pull the latest image from Docker Hub
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pro-todo-app:latest
+            # Stop and remove the old container if it exists
             docker stop pro-todo-container || true
             docker rm pro-todo-container || true
+            # Run the new container with the production environment variables
+            # Note: We've removed the quotes around the secrets as a debugging step.
             docker run -d --name pro-todo-container \
               -p 5000:5000 \
-              -e DATABASE_URI="${{ secrets.PROD_DATABASE_URI }}" \
-              -e SECRET_KEY="${{ secrets.PROD_SECRET_KEY }}" \
+              -e DATABASE_URI=${{ secrets.PROD_DATABASE_URI }} \
+              -e SECRET_KEY=${{ secrets.PROD_SECRET_KEY }} \
               ${{ secrets.DOCKERHUB_USERNAME }}/pro-todo-app:latest
